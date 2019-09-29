@@ -1,0 +1,102 @@
+const Commando = require('discord.js-commando');
+const Discord = require('discord.js');
+const bot = new Discord.Client();
+const TOKEN = require('./config.json');
+
+bot.registry.registerGroup("music", "Music");
+bot.registry.registerDefaults();
+bot.registry.registerCommandsIn(--dirname + "/commands");
+
+global.currentTeamMembers = [];
+global.servers = {};
+
+bot.on('ready', () =>{
+    console.log('A bot online!')
+    bot.user.setActivity("!help", {type: "LISTENING"});
+
+    //We need a varible to track on what activity it's on.
+    let activNum = 0; // Zero is the first activity
+
+    // Tick event: Runs every so often the argument of the Interval tells it to.
+    setInterval(function() {
+        if (activNum === 0) { // Chechking on what activity it's on.
+		    bot.user.setActivity(`${bot.guilds.size}servers`, {type: "WATCHING"});
+            activNum = 1;
+        }else if (activNum === 1) {
+            bot.user.setActivity(`${bot.users.size}members`, {type: "STREAMING"});
+            activNum = 0;
+        }
+    }, 3* 1000); //Every 3 seconds. The * 1000 is here so the '3' is going to be converted from Milliseconds to Seconds
+})
+
+bot.on('guildMemberAdd', member => {
+
+    console.log('User ' + member.username + ' has joined the server!')
+
+    var role = member.guild.roles.find('name', 'USER')
+
+    member.addRole(role)
+})
+bot.on("message", message => {
+    let cont = message.content.slice(prefix.length).split(" ");
+    let args = cont.slice(1);
+    if (message.content.startsWith(prefix + "kill")) {
+
+        async function purge() {
+            message.delete();
+
+            if (!message.member.hasPermission('ADMINISTRATOR')) {
+                message.channel.send("You don't have permission to do this! :)" + message.author.toString());
+                return;
+            }
+
+            if(isNaN(args[0])) {
+                message.channel.send('Please add a number! \n Usage: "!kill number"');
+                return;
+            }
+
+            const fetched = await message.channel.fetchMessages({limit: args[0]});
+            console.log(fetched.size + "Messages found, deleting...");
+
+            message.channel.bulkDelete(fetched)
+            .catch(error => console.log(`Error: ${error}`)); 
+        }
+        purge();
+    }
+});
+
+bot.on('message', message=>{
+
+    let args = message.content.substring(prefix.length).split(" ");
+
+    switch(args[0]){
+        case 'ping':
+            message.channel.sendMessage('pong!');
+            break;
+        case 'website':
+            message.channel.sendMessage('www.youtube.com/channel/UCKwT4yXKQ2M-K7ue6pdJj2Q')
+            break;
+        case 'info':
+            if(args[1] === 'version'){
+            message.channel.sendMessage('Version 1.0.1');
+        }else{
+            message.channel.sendMessage('Invalid Args')
+        }
+    break;
+case 'help':
+    message.channel.send('(!)kill number (clear the chat only for administrators!) \n(!)info version (writes the version of bot) \n \n \nThe discord server link \nhttps://discord.gg/JC7bWUg \nBOT INVITE LINK: \nhttps://discordapp.com/oauth2/authorize?client_id=625350378208362506&scope=bot&permissions=8 \n                    DEVELOPER: @Andorٴ #2348');
+
+    }
+
+})
+
+bot.on('guildMemberAdd', member => {
+
+    console.log('User ' + member.username + ' has joined the server!')
+
+    var role = member.guild.roles.find('name', 'USER')
+
+    member.addRole(role)
+})
+
+bot.login(token);
